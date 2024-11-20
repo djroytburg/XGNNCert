@@ -62,19 +62,16 @@ dataset = Benzene(split_sizes = (0.7, 0.2, 0.1), seed = seed)
 #model_path = "./checkpoint/classifier/GCN3-Benzene-original.pth"
 model_path = "./checkpoint/classifier-p/GCN-Benzene-T={}-p={}.pth".format(T,P)
 #model_path = "./checkpoint/classifier-p/GCN-DD-T={}-p={}.pth".format(T,P)
-#model_path = "./checkpoint  /classifier/GIN-Benzene-T=50-md5.pth"
-#model_path = "./checkpoint/classifier-p/GIN3-BA3Motif-T={}-p={}.pth".format(T,P)
-#model_path = "./checkpoint/classifier-p/GIN3-BA3Motif-T=50-p=0.pth"
 
 
 if os.path.exists(model_path):            
     model = torch.load(model_path)
 else:
-    #model = GCN_3layer(10, 64, 2).to(device)
-    #model = GCN_3layer(89, 64, 2).to(device)
-    model = GCN_3layer(14, 64, 2).to(device)
+    #model = GCN_3layer(10, 128, 2).to(device)
+    #model = GCN_3layer(89, 128, 2).to(device)
+    model = GCN_3layer(14, 128, 2).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.002)
-    #optimizer = torch.optim.AdamW(model.parameters(), lr=0.01, weight_decay=5e-4)
+    #optimizer = torch.optim.AdamW(model.parameters(), lr=0.001, weight_decay=5e-4)
     criterion = torch.nn.CrossEntropyLoss()
     maxf1 =0
     en_dataset = enlarge_graph(dataset,Hasher)
@@ -82,7 +79,7 @@ else:
     train_loader, _ =  en_dataset.get_train_loader(batch_size = 2048)
     val_loader, _ = en_dataset.get_val_loader()
     test_loader, _ = en_dataset.get_test_loader()
-    for epoch in range(1, 200):
+    for epoch in range(1, 1000):
         train(model, optimizer, criterion, train_loader,device = device)
         f1, prec, rec, auprc, auroc = test(model, val_loader,device =device)
         #f1, prec, rec, auprc, auroc = test_multi(model, test_loader,device =device)
@@ -93,23 +90,6 @@ else:
     model = torch.load(model_path)
 
 
-"""
-testtimes=200
-
-null_batch = torch.zeros(1).long().to(device)
-for _ in range(testtimes):
-    test_data, gt_exp = dataset.get_test_w_label(label = 1) # Get positive example
-    test_data = test_data.to(device)
-# 9Predict on the chosen testing sample: ----------------
-# Filler to get around batch variable in GNN model
-    model.eval()    
-    
-    with torch.no_grad():
-        prediction = model(test_data.x, test_data.edge_index, batch = null_batch)
-
-    predicted = prediction.argmax(dim=1).item()
-    #print(test_data.y, predicted)
-"""
 
 #train Explainer on the original dataset
 
@@ -186,8 +166,8 @@ refine.train_explanation_model(train_data, forward_kwargs = forward_kwargs)
 torch.save(refine.elayers, refine_path)
 """
 #"""
-pg_explainer = PGExplainer(model, emb_layer_name = 'conv3', coeff_size=1e-7,coeff_ent=3e-4, eps=1e-16,
-    max_epochs=20, lr=0.005, explain_graph = True)
+pg_explainer = PGExplainer(model, emb_layer_name = 'conv3', coeff_size=1e-5,coeff_ent=3e-4, eps=1e-16,
+    max_epochs=30, lr=0.01, explain_graph = True)
 
 
 pg_explainer_path = "./checkpoint/explainer/Pg-GCN-benzene-T={}-p={}.pth".format(T,P)
