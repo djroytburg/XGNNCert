@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 # Get dataset:
     
 import os
+from tqdm import tqdm
 
 from graphxai.datasets import FluorideCarbonyl as FC
 from graphxai.datasets import Benzene
@@ -63,9 +64,9 @@ dataset = Benzene(split_sizes = (0.7, 0.2, 0.1), seed = seed)
 model_path = "./checkpoint/classifier-p/GCN-Benzene-T={}-p={}.pth".format(T,P)
 #model_path = "./checkpoint/classifier-p/GCN-DD-T={}-p={}.pth".format(T,P)
 
-
+print(device)
 if os.path.exists(model_path):            
-    model = torch.load(model_path)
+    model = torch.load(model_path, weights_only=False)
 else:
     #model = GCN_3layer(10, 128, 2).to(device)
     #model = GCN_3layer(89, 128, 2).to(device)
@@ -79,7 +80,7 @@ else:
     train_loader, _ =  en_dataset.get_train_loader(batch_size = 2048)
     val_loader, _ = en_dataset.get_val_loader()
     test_loader, _ = en_dataset.get_test_loader()
-    for epoch in range(1, 1000):
+    for epoch in tqdm(range(1, 1000)):
         train(model, optimizer, criterion, train_loader,device = device)
         f1, prec, rec, auprc, auroc = test(model, val_loader,device =device)
         #f1, prec, rec, auprc, auroc = test_multi(model, test_loader,device =device)
@@ -179,7 +180,7 @@ else:
     #pg_explainer.train_explanation_model(dataset.graphs, forward_kwargs = forward_kwargs)
     #torch.save(pg_explainer.elayers, pg_explainer_path)
     #en_dataset = enlarge_graph(dataset,Hasher,split_sizes = (0.8, 0.2, 0))
-    train_data, train_exp = dataset.get_train_list#get_train_w_labels(label=1)
+    train_data, train_exp = dataset.get_train_list()
     pg_explainer.train_explanation_model(train_data, forward_kwargs = forward_kwargs)
         #sub_explainer.train_explanation_model(dataset.graphs, forward_kwargs = forward_kwargs)
         #sub_explainer.train_explanation_model(en_dataset.graphs, forward_kwargs = forward_kwargs)

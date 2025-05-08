@@ -6,7 +6,8 @@ from typing import List
 from torch_geometric.utils import k_hop_subgraph
 from torch_geometric.data import Data
 from pgmpy.estimators.CITests import chi_square
-from pgmpy.estimators import HillClimbSearch, BicScore
+from pgmpy.estimators import HillClimbSearch
+from pgmpy.estimators import BIC as BicScore
 from pgmpy.models import BayesianNetwork
 
 from graphxai.explainers._base import _BaseExplainer
